@@ -1,8 +1,11 @@
 import 'package:ben_kimim/firebase_options.dart';
 import 'package:ben_kimim/presentation/game/bloc/all_players_cubit.dart';
+import 'package:ben_kimim/presentation/game/bloc/background_color_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/current_player_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/display_random_famous_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/players_listed_by_score_cubit.dart';
+import 'package:ben_kimim/presentation/game/bloc/status_text_cubit.dart';
+import 'package:ben_kimim/presentation/game/bloc/timer_cubit.dart';
 import 'package:ben_kimim/presentation/splash/bloc/load_cached_famous_cubit.dart';
 import 'package:ben_kimim/presentation/splash/pages/splash.dart';
 import 'package:ben_kimim/service_locator.dart';
@@ -16,10 +19,7 @@ Future<void> main() async {
   // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // await FamousHelper.addFamousNames();
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await initializeDependencies();
   runApp(const MyApp());
 }
@@ -47,6 +47,13 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<DisplayRandomFamousCubit>(
           create: (context) => DisplayRandomFamousCubit()..fetchRandom(),
+        ),
+        BlocProvider<TimerCubit>(create: (context) => TimerCubit()),
+        BlocProvider<BackgroundColorCubit>(
+          create: (context) => BackgroundColorCubit(),
+        ),
+        BlocProvider<StatusTextCubit>(
+          create: (context) => StatusTextCubit(),
         ),
       ],
       child: MaterialApp(

@@ -1,13 +1,19 @@
-import 'package:ben_kimim/common/navigator/app_navigator.dart';
-import 'package:ben_kimim/domain/famous/entity/famous.dart';
-import 'package:ben_kimim/domain/player/entity/player.dart';
-import 'package:ben_kimim/presentation/game/bloc/current_player_cubit.dart';
-import 'package:ben_kimim/presentation/game/bloc/players_listed_by_score_cubit.dart';
-import 'package:ben_kimim/presentation/game/bloc/display_random_famous_cubit.dart';
-import 'package:ben_kimim/presentation/game/pages/score.dart';
+import 'dart:async';
+import 'package:ben_kimim/presentation/game/bloc/status_text_cubit.dart';
+import 'package:ben_kimim/presentation/game/widgets/game_timer.dart';
+import 'package:ben_kimim/presentation/game/widgets/random_name.dart';
+import 'package:ben_kimim/presentation/game/widgets/score.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sensors_plus/sensors_plus.dart';
+import 'package:ben_kimim/common/navigator/app_navigator.dart';
+import 'package:ben_kimim/presentation/game/bloc/current_player_cubit.dart';
+import 'package:ben_kimim/presentation/game/bloc/players_listed_by_score_cubit.dart';
+import 'package:ben_kimim/presentation/game/bloc/display_random_famous_cubit.dart';
+import 'package:ben_kimim/presentation/game/bloc/timer_cubit.dart';
+import 'package:ben_kimim/presentation/game/bloc/background_color_cubit.dart';
+import 'package:ben_kimim/presentation/game/pages/score.dart';
 
 class GamePage extends StatefulWidget {
   const GamePage({super.key});
@@ -17,16 +23,24 @@ class GamePage extends StatefulWidget {
 }
 
 class _GamePageState extends State<GamePage> {
+  Timer? _timer;
+  late int _remainingSeconds;
+  StreamSubscription? _accelerometerSub;
+  bool _isProcessing = false;
+
   @override
   void initState() {
     super.initState();
-    // 📱 Force landscape orientation only for this page
     SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
+    _remainingSeconds = context.read<TimerCubit>().state;
+    _startTimer();
+    _listenAccelerometer();
   }
 
   @override
   void dispose() {
-    // 🔙 Restore portrait orientation when leaving the page
+    _timer?.cancel();
+    _accelerometerSub?.cancel();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     super.dispose();
   }
@@ -35,101 +49,93 @@ class _GamePageState extends State<GamePage> {
   Widget build(BuildContext context) {
     final currentPlayer = context.watch<CurrentPlayerCubit>().currentPlayer;
 
-    return Scaffold(
-      // appBar: AppBar(title: Text("${currentPlayer.name}'s Turn")),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildScore(context, currentPlayer),
-            const SizedBox(height: 40),
-            _buildRandomName(),
-            const SizedBox(height: 40),
-            _buildActionButtons(context, currentPlayer),
-            const SizedBox(height: 40),
-            _buildFinishTurnButton(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // 🎯 Displays the current player's score
-  Widget _buildScore(BuildContext context, PlayerEntity currentPlayer) {
-    return BlocBuilder<PlayersListedByScoreCubit, List<PlayerEntity>>(
-      builder: (context, players) {
-        final score = players
-            .firstWhere((p) => p.name == currentPlayer.name)
-            .score;
-        return Text(
-          "${currentPlayer.name} Score: $score",
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        );
-      },
-    );
-  }
-
-  // 🔤 Displays the current random famous name
-  Widget _buildRandomName() {
-    return BlocBuilder<DisplayRandomFamousCubit, FamousEntity?>(
-      builder: (context, famous) {
-        if (famous == null) {
-          return const Text(
-            "Loading...",
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
-          );
-        }
-        return Text(
-          famous.name,
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
-        );
-      },
-    );
-  }
-
-  // ✅ and 🔁 Action buttons (Correct / Pass)
-  Widget _buildActionButtons(BuildContext context, PlayerEntity currentPlayer) {
-    return Column(
-      children: [
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
-            minimumSize: const Size(200, 50),
-          ),
-          onPressed: () {
-            // Increase player score by 1 and fetch a new random name
-            context.read<PlayersListedByScoreCubit>().increaseScore(
-              currentPlayer,
-              1,
+    return BlocBuilder<BackgroundColorCubit, Color>(
+      builder: (context, backgroundColor) {
+        return BlocBuilder<StatusTextCubit, String?>(
+          builder: (context, statusText) {
+            return Scaffold(
+              backgroundColor: backgroundColor,
+              body: Center(
+                child: statusText != null
+                    ? Text(
+                        statusText,
+                        style: const TextStyle(
+                          fontSize: 80,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          GameTimer(remainingSeconds: _remainingSeconds),
+                          const SizedBox(height: 30),
+                          const RandomName(),
+                          const SizedBox(height: 40),
+                          Score(currentPlayer: currentPlayer),
+                        ],
+                      ),
+              ),
             );
-            context.read<DisplayRandomFamousCubit>().fetchRandom();
           },
-          child: const Text("Correct", style: TextStyle(fontSize: 20)),
-        ),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orange,
-            minimumSize: const Size(200, 50),
-          ),
-          onPressed: () {
-            // Just fetch a new random name
-            context.read<DisplayRandomFamousCubit>().fetchRandom();
-          },
-          child: const Text("Pass", style: TextStyle(fontSize: 20)),
-        ),
-      ],
+        );
+      },
     );
   }
 
-  // 🏁 Button to finish the current player's turn
-  Widget _buildFinishTurnButton(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () {
-        context.read<CurrentPlayerCubit>().nextPlayer();
-        AppNavigator.pushReplacement(context, const ScorePage());
-      },
-      child: const Text("Finish Turn"),
-    );
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds > 0) {
+        setState(() => _remainingSeconds--);
+      } else {
+        _timer?.cancel();
+        _finishTurn();
+      }
+    });
+  }
+
+  void _listenAccelerometer() {
+    _accelerometerSub = accelerometerEvents.listen((event) {
+      if (_isProcessing) return;
+
+      final x = event.x;
+      final y = event.y;
+      final z = event.z;
+
+      if (x.abs() < 3 && y.abs() < 5 && z <= -9 && z >= -11) {
+        _handleCorrect();
+      } else if (x.abs() < 3 && y.abs() < 5 && z >= 9 && z <= 11) {
+        _handlePass();
+      }
+    });
+  }
+
+  void _handleCorrect() {
+    final currentPlayer = context.read<CurrentPlayerCubit>().currentPlayer;
+    context.read<PlayersListedByScoreCubit>().increaseScore(currentPlayer, 1);
+    _showTempState("Doğru!", Colors.green);
+  }
+
+  void _handlePass() {
+    _showTempState("Pas!", Colors.red);
+  }
+
+  void _showTempState(String text, Color color) {
+    _isProcessing = true;
+    context.read<StatusTextCubit>().show(text);
+    context.read<BackgroundColorCubit>().setColor(color);
+
+    Future.delayed(const Duration(seconds: 1), () {
+      if (!mounted) return;
+      _isProcessing = false;
+      context.read<StatusTextCubit>().hide();
+      context.read<BackgroundColorCubit>().reset();
+      context.read<DisplayRandomFamousCubit>().fetchRandom();
+    });
+  }
+
+  void _finishTurn() {
+    context.read<CurrentPlayerCubit>().nextPlayer();
+    AppNavigator.pushReplacement(context, const ScorePage());
   }
 }
