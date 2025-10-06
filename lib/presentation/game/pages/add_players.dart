@@ -1,4 +1,5 @@
 import 'package:ben_kimim/common/navigator/app_navigator.dart';
+import 'package:ben_kimim/core/configs/theme/app_colors.dart';
 import 'package:ben_kimim/domain/player/entity/player.dart';
 import 'package:ben_kimim/presentation/game/bloc/all_players_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/current_player_cubit.dart';
@@ -26,75 +27,118 @@ class _AddPlayersPageState extends State<AddPlayersPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Add Players")),
-      body: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            Expanded(child: _buildPlayerInputs()),
-            _buildAddRemoveButtons(),
-            const SizedBox(height: 16),
-            _buildContinueButton(),
-            const SizedBox(height: 20),
-          ],
+      appBar: AppBar(
+        title: const Text("Add Players"),
+        backgroundColor: AppColors.primary,
+        centerTitle: true,
+        elevation: 0,
+      ),
+      backgroundColor: AppColors.accent.withOpacity(0.1),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Expanded(child: _buildPlayerInputs()),
+              const SizedBox(height: 12),
+              _buildAddRemoveButtons(),
+              const SizedBox(height: 20),
+              _buildContinueButton(),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // 🧍 Builds the player name input fields
   Widget _buildPlayerInputs() {
     return ListView.builder(
       itemCount: controllers.length,
       itemBuilder: (context, index) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: TextFormField(
-            controller: controllers[index],
-            decoration: InputDecoration(
-              labelText: "Player ${index + 1}",
-              border: const OutlineInputBorder(),
+        return Card(
+          elevation: 3,
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: TextFormField(
+              controller: controllers[index],
+              decoration: InputDecoration(
+                labelText: "Player ${index + 1}",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                prefixIcon: Icon(Icons.person, color: AppColors.primary),
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return "Name cannot be empty";
+                }
+                return null;
+              },
             ),
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return "Name cannot be empty";
-              }
-              return null;
-            },
           ),
         );
       },
     );
   }
 
-  // ➕➖ Buttons to add or remove player input fields
   Widget _buildAddRemoveButtons() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        ElevatedButton(onPressed: _addPlayerField, child: const Text("+")),
-        const SizedBox(width: 16),
-        ElevatedButton(onPressed: _removePlayerField, child: const Text("-")),
+        ElevatedButton(
+          onPressed: _addPlayerField,
+          style: ElevatedButton.styleFrom(
+            shape: const CircleBorder(),
+            padding: const EdgeInsets.all(16),
+            backgroundColor: AppColors.secondary,
+          ),
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
+        const SizedBox(width: 20),
+        ElevatedButton(
+          onPressed: _removePlayerField,
+          style: ElevatedButton.styleFrom(
+            shape: const CircleBorder(),
+            padding: const EdgeInsets.all(16),
+            backgroundColor: AppColors.accent,
+          ),
+          child: const Icon(Icons.remove, color: Colors.white),
+        ),
       ],
     );
   }
 
-  // ▶️ "Continue" button
   Widget _buildContinueButton() {
-    return ElevatedButton(
-      onPressed: _createPlayers,
-      child: const Text("Continue"),
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _createPlayers,
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          backgroundColor: AppColors.primary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: const Text(
+          "Continue",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      ),
     );
   }
 
-  // ➕ Adds a new player input field
   void _addPlayerField() {
     setState(() {
       controllers.add(TextEditingController());
     });
   }
 
-  // ➖ Removes the last player input field (min 2 fields)
   void _removePlayerField() {
     if (controllers.length > 2) {
       setState(() {
@@ -103,7 +147,6 @@ class _AddPlayersPageState extends State<AddPlayersPage> {
     }
   }
 
-  // 🧠 Creates player entities and updates Cubits
   void _createPlayers() {
     if (_formKey.currentState!.validate()) {
       players = controllers
@@ -112,17 +155,14 @@ class _AddPlayersPageState extends State<AddPlayersPage> {
 
       debugPrint("Players: ${players.map((p) => p.name).join(', ')}");
 
-      // Access cubits
       final allPlayersCubit = context.read<AllPlayersCubit>();
       final scoreCubit = context.read<PlayersListedByScoreCubit>();
       final currentPlayerCubit = context.read<CurrentPlayerCubit>();
 
-      // Update cubits with new player list
       allPlayersCubit.addPlayers(players);
       scoreCubit.setPlayers(players);
       currentPlayerCubit.setPlayers(players);
 
-      // Navigate to ScorePage
       AppNavigator.push(context, const ScorePage());
     }
   }

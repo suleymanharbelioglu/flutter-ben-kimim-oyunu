@@ -16,7 +16,7 @@ class Score extends StatelessWidget {
             .firstWhere((p) => p.name == currentPlayer.name)
             .score;
         return Text(
-          "${currentPlayer.name} Score: $score",
+          " Score $score",
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         );
       },

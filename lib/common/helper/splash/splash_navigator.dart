@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 
 class SplashNavigator {
   static Future<void> navigate(BuildContext context, Widget widget) async {
- await Future.delayed(Duration(seconds: 3));
-   AppNavigator.pushReplacement(context, widget);
+    await Future.delayed(Duration(seconds: 3));
+    AppNavigator.pushReplacement(context, widget);
   }
 }

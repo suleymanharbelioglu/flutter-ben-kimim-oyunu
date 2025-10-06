@@ -9,10 +9,19 @@ class GameTimer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       '$remainingSeconds',
+      textAlign: TextAlign.center,
       style: const TextStyle(
-        fontSize: 36,
+        fontSize: 48, // daha dengeli boyut
         fontWeight: FontWeight.bold,
-        color: Colors.red,
+        color: Colors.redAccent, // canlı kırmızı
+        letterSpacing: 1.2,
+        shadows: [
+          Shadow(
+            offset: Offset(1.5, 1.5),
+            blurRadius: 3,
+            color: Colors.black26, // hafif gölge
+          ),
+        ],
       ),
     );
   }

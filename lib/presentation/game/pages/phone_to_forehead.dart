@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:ben_kimim/presentation/game/pages/game.dart';
+import 'package:ben_kimim/core/configs/theme/app_colors.dart';
 
 class PhoneToForeheadPage extends StatefulWidget {
   const PhoneToForeheadPage({super.key});
@@ -15,7 +16,7 @@ class _PhoneToForeheadPageState extends State<PhoneToForeheadPage> {
   int countdown = 3;
   Timer? _timer;
   StreamSubscription? _accelerometerSubscription;
-  bool countdownStarted = false; // Sayım başladı mı kontrolü
+  bool countdownStarted = false;
 
   // Target ranges
   final double minX = 7;
@@ -79,23 +80,24 @@ class _PhoneToForeheadPageState extends State<PhoneToForeheadPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.accent.withOpacity(0.1),
       body: Center(
         child: countdownStarted
             ? Text(
                 '$countdown',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 80,
                   fontWeight: FontWeight.bold,
-                  color: Colors.red,
+                  color: AppColors.secondary,
                 ),
               )
-            : const Text(
+            : Text(
                 'TELEFONU ALNINA YERLEŞTİRİN',
                 style: TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 2,
-                  color: Colors.blueAccent,
+                  color: AppColors.primary,
                 ),
                 textAlign: TextAlign.center,
               ),

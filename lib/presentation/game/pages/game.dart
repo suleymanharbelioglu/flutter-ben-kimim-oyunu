@@ -66,12 +66,16 @@ class _GamePageState extends State<GamePage> {
                         ),
                       )
                     : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
+                          // Timer
                           GameTimer(remainingSeconds: _remainingSeconds),
-                          const SizedBox(height: 30),
+
+                          // Famous Name
                           const RandomName(),
-                          const SizedBox(height: 40),
+
+                          // Score
                           Score(currentPlayer: currentPlayer),
                         ],
                       ),

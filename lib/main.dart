@@ -1,3 +1,5 @@
+import 'package:ben_kimim/common/helper/famous/famous.dart';
+import 'package:ben_kimim/core/configs/theme/app_theme.dart';
 import 'package:ben_kimim/firebase_options.dart';
 import 'package:ben_kimim/presentation/game/bloc/all_players_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/background_color_cubit.dart';
@@ -52,11 +54,10 @@ class MyApp extends StatelessWidget {
         BlocProvider<BackgroundColorCubit>(
           create: (context) => BackgroundColorCubit(),
         ),
-        BlocProvider<StatusTextCubit>(
-          create: (context) => StatusTextCubit(),
-        ),
+        BlocProvider<StatusTextCubit>(create: (context) => StatusTextCubit()),
       ],
       child: MaterialApp(
+        theme: AppTheme.appTheme,
         debugShowCheckedModeBanner: false,
         title: 'Ben Kimim Oyunu',
         home: const SplashPage(),

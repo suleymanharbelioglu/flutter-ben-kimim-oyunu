@@ -2,7 +2,6 @@ import 'package:ben_kimim/domain/player/entity/player.dart';
 import 'package:ben_kimim/presentation/game/bloc/all_players_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/current_player_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/players_listed_by_score_cubit.dart';
-import 'package:ben_kimim/presentation/game/pages/game.dart';
 import 'package:ben_kimim/presentation/game/pages/phone_to_forehead.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,11 +12,17 @@ class ScorePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Puan Tablosu")),
+      appBar: AppBar(
+        title: const Text("Puan Tablosu"),
+        backgroundColor: Colors.deepPurple,
+        centerTitle: true,
+        elevation: 0,
+      ),
+      backgroundColor: Colors.grey[100],
       body: Column(
         children: [
           Expanded(child: _buildScoreList()),
-          const Divider(),
+          const Divider(thickness: 2),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: _buildCurrentPlayerSection(context),
@@ -27,30 +32,41 @@ class ScorePage extends StatelessWidget {
     );
   }
 
-  /// Builds the score list for all players
   Widget _buildScoreList() {
     return BlocBuilder<PlayersListedByScoreCubit, List<PlayerEntity>>(
       builder: (context, players) {
         return ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 8),
           itemCount: players.length,
           itemBuilder: (context, index) {
             final player = players[index];
-            return _buildPlayerTile(player);
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 3,
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.deepPurple,
+                  child: Text(
+                    "${index + 1}",
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+                title: Text(player.name),
+                trailing: Text(
+                  "Puan: ${player.score}",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            );
           },
         );
       },
     );
   }
 
-  /// Builds each player's tile (name and score)
-  Widget _buildPlayerTile(PlayerEntity player) {
-    return ListTile(
-      title: Text(player.name),
-      trailing: Text("Puan: ${player.score}"),
-    );
-  }
-
-  /// Builds the section showing the current player and the "Play" button
   Widget _buildCurrentPlayerSection(BuildContext context) {
     return BlocBuilder<CurrentPlayerCubit, int>(
       builder: (context, currentIndex) {
@@ -58,28 +74,36 @@ class ScorePage extends StatelessWidget {
         final currentPlayer = allPlayers[currentIndex];
 
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
               "Sıradaki Oyuncu: ${currentPlayer.name}",
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
-            _buildPlayButton(context),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => _navigateToGamePage(context),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.deepPurple,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  "Oyna",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
           ],
         );
       },
     );
   }
 
-  /// Builds the "Play" button and navigates to the game page
-  Widget _buildPlayButton(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () => _navigateToGamePage(context),
-      child: const Text("Oyna"),
-    );
-  }
-
-  /// Handles navigation to the game page
   void _navigateToGamePage(BuildContext context) {
     Navigator.push(
       context,
