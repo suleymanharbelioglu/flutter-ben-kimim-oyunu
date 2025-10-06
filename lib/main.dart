@@ -8,6 +8,7 @@ import 'package:ben_kimim/presentation/splash/pages/splash.dart';
 import 'package:ben_kimim/service_locator.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 Future<void> main() async {
@@ -15,6 +16,10 @@ Future<void> main() async {
   // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // await FamousHelper.addFamousNames();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   await initializeDependencies();
   runApp(const MyApp());
 }

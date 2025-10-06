@@ -16,7 +16,7 @@ class AddPlayersPage extends StatefulWidget {
 
 class _AddPlayersPageState extends State<AddPlayersPage> {
   final _formKey = GlobalKey<FormState>();
-  List<TextEditingController> controllers = [
+  final List<TextEditingController> controllers = [
     TextEditingController(),
     TextEditingController(),
   ];
@@ -26,66 +26,15 @@ class _AddPlayersPageState extends State<AddPlayersPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Oyuncu Girişi")),
+      appBar: AppBar(title: const Text("Add Players")),
       body: Form(
         key: _formKey,
         child: Column(
           children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: controllers.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: TextFormField(
-                      controller: controllers[index],
-                      decoration: InputDecoration(
-                        labelText: "Oyuncu ${index + 1}",
-                        border: const OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return "İsim boş olamaz";
-                        }
-                        return null;
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      controllers.add(TextEditingController());
-                    });
-                  },
-                  child: const Text("+"),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    if (controllers.length > 2) {
-                      setState(() {
-                        controllers.removeLast();
-                      });
-                    }
-                  },
-                  child: const Text("-"),
-                ),
-              ],
-            ),
+            Expanded(child: _buildPlayerInputs()),
+            _buildAddRemoveButtons(),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _createPlayers,
-              child: const Text("Devam"),
-            ),
+            _buildContinueButton(),
             const SizedBox(height: 20),
           ],
         ),
@@ -93,29 +42,88 @@ class _AddPlayersPageState extends State<AddPlayersPage> {
     );
   }
 
+  // 🧍 Builds the player name input fields
+  Widget _buildPlayerInputs() {
+    return ListView.builder(
+      itemCount: controllers.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: TextFormField(
+            controller: controllers[index],
+            decoration: InputDecoration(
+              labelText: "Player ${index + 1}",
+              border: const OutlineInputBorder(),
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return "Name cannot be empty";
+              }
+              return null;
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  // ➕➖ Buttons to add or remove player input fields
+  Widget _buildAddRemoveButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ElevatedButton(onPressed: _addPlayerField, child: const Text("+")),
+        const SizedBox(width: 16),
+        ElevatedButton(onPressed: _removePlayerField, child: const Text("-")),
+      ],
+    );
+  }
+
+  // ▶️ "Continue" button
+  Widget _buildContinueButton() {
+    return ElevatedButton(
+      onPressed: _createPlayers,
+      child: const Text("Continue"),
+    );
+  }
+
+  // ➕ Adds a new player input field
+  void _addPlayerField() {
+    setState(() {
+      controllers.add(TextEditingController());
+    });
+  }
+
+  // ➖ Removes the last player input field (min 2 fields)
+  void _removePlayerField() {
+    if (controllers.length > 2) {
+      setState(() {
+        controllers.removeLast();
+      });
+    }
+  }
+
+  // 🧠 Creates player entities and updates Cubits
   void _createPlayers() {
     if (_formKey.currentState!.validate()) {
       players = controllers
           .map((controller) => PlayerEntity(name: controller.text))
           .toList();
 
-      for (var p in players) {
-        debugPrint('Oyuncu: ${p.name}');
-      }
+      debugPrint("Players: ${players.map((p) => p.name).join(', ')}");
 
+      // Access cubits
       final allPlayersCubit = context.read<AllPlayersCubit>();
       final scoreCubit = context.read<PlayersListedByScoreCubit>();
       final currentPlayerCubit = context.read<CurrentPlayerCubit>();
 
-      // Add players to cubits
+      // Update cubits with new player list
       allPlayersCubit.addPlayers(players);
-      scoreCubit.setPlayers(players); // Score list cubitini güncelle
-      currentPlayerCubit.setPlayers(
-        players,
-      ); // CurrentPlayerCubit'e oyuncuları set et
+      scoreCubit.setPlayers(players);
+      currentPlayerCubit.setPlayers(players);
 
       // Navigate to ScorePage
-      AppNavigator.push(context, ScorePage());
+      AppNavigator.push(context, const ScorePage());
     }
   }
 }
