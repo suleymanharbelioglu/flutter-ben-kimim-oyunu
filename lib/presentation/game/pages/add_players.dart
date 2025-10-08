@@ -33,7 +33,7 @@ class _AddPlayersPageState extends State<AddPlayersPage> {
         centerTitle: true,
         elevation: 0,
       ),
-      backgroundColor: AppColors.accent.withOpacity(0.1),
+      backgroundColor: AppColors.background,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -95,7 +95,7 @@ class _AddPlayersPageState extends State<AddPlayersPage> {
           style: ElevatedButton.styleFrom(
             shape: const CircleBorder(),
             padding: const EdgeInsets.all(16),
-            backgroundColor: AppColors.secondary,
+            backgroundColor: AppColors.primary,
           ),
           child: const Icon(Icons.add, color: Colors.white),
         ),
@@ -105,7 +105,7 @@ class _AddPlayersPageState extends State<AddPlayersPage> {
           style: ElevatedButton.styleFrom(
             shape: const CircleBorder(),
             padding: const EdgeInsets.all(16),
-            backgroundColor: AppColors.accent,
+            backgroundColor: AppColors.primary,
           ),
           child: const Icon(Icons.remove, color: Colors.white),
         ),
@@ -152,8 +152,6 @@ class _AddPlayersPageState extends State<AddPlayersPage> {
       players = controllers
           .map((controller) => PlayerEntity(name: controller.text))
           .toList();
-
-      debugPrint("Players: ${players.map((p) => p.name).join(', ')}");
 
       final allPlayersCubit = context.read<AllPlayersCubit>();
       final scoreCubit = context.read<PlayersListedByScoreCubit>();

@@ -1,8 +1,13 @@
 import 'dart:async';
+import 'package:ben_kimim/presentation/game/bloc/all_players_cubit.dart';
+import 'package:ben_kimim/presentation/game/bloc/max_round_cubit.dart';
+import 'package:ben_kimim/presentation/game/bloc/round_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/status_text_cubit.dart';
+import 'package:ben_kimim/presentation/game/pages/game_end.dart';
 import 'package:ben_kimim/presentation/game/widgets/game_timer.dart';
 import 'package:ben_kimim/presentation/game/widgets/random_name.dart';
 import 'package:ben_kimim/presentation/game/widgets/score.dart';
+import 'package:ben_kimim/presentation/home/pages/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,7 +31,8 @@ class _GamePageState extends State<GamePage> {
   Timer? _timer;
   late int _remainingSeconds;
   StreamSubscription? _accelerometerSub;
-  bool _isProcessing = false;
+  bool _isTilted = false;
+  bool _timeEnded = false; // süre bitti durumu
 
   @override
   void initState() {
@@ -54,31 +60,57 @@ class _GamePageState extends State<GamePage> {
         return BlocBuilder<StatusTextCubit, String?>(
           builder: (context, statusText) {
             return Scaffold(
-              backgroundColor: backgroundColor,
-              body: Center(
-                child: statusText != null
-                    ? Text(
-                        statusText,
-                        style: const TextStyle(
-                          fontSize: 80,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Timer
-                          GameTimer(remainingSeconds: _remainingSeconds),
+              backgroundColor: _timeEnded
+                  ? Colors.yellow
+                  : backgroundColor, // süre bittiğinde sarı
+              body: Stack(
+                children: [
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        GameTimer(remainingSeconds: _remainingSeconds),
 
-                          // Famous Name
+                        if (_timeEnded)
+                          const Text(
+                            "SÜRE BİTTİ",
+                            style: TextStyle(
+                              fontSize: 80,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          )
+                        else if (statusText != null)
+                          Text(
+                            statusText,
+                            style: const TextStyle(
+                              fontSize: 80,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          )
+                        else
                           const RandomName(),
 
-                          // Score
-                          Score(currentPlayer: currentPlayer),
-                        ],
+                        Score(currentPlayer: currentPlayer),
+                      ],
+                    ),
+                  ),
+
+                  Positioned(
+                    top: 20,
+                    left: 20,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back_ios,
+                        color: Colors.white,
+                        size: 30,
                       ),
+                      onPressed: _pauseGame,
+                    ),
+                  ),
+                ],
               ),
             );
           },
@@ -88,11 +120,18 @@ class _GamePageState extends State<GamePage> {
   }
 
   void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (_remainingSeconds > 0) {
         setState(() => _remainingSeconds--);
       } else {
         _timer?.cancel();
+
+        // süre bitti durumu
+        setState(() => _timeEnded = true);
+
+        // 1 saniye bekle
+        await Future.delayed(const Duration(seconds: 1));
+
         _finishTurn();
       }
     });
@@ -100,16 +139,16 @@ class _GamePageState extends State<GamePage> {
 
   void _listenAccelerometer() {
     _accelerometerSub = accelerometerEvents.listen((event) {
-      if (_isProcessing) return;
-
-      final x = event.x;
-      final y = event.y;
       final z = event.z;
 
-      if (x.abs() < 3 && y.abs() < 5 && z <= -9 && z >= -11) {
+      if (!_isTilted && z <= -9 && z >= -11) {
+        _isTilted = true;
         _handleCorrect();
-      } else if (x.abs() < 3 && y.abs() < 5 && z >= 9 && z <= 11) {
+      } else if (!_isTilted && z >= 9 && z <= 11) {
+        _isTilted = true;
         _handlePass();
+      } else if (_isTilted && z.abs() < 6) {
+        _resetState();
       }
     });
   }
@@ -125,21 +164,65 @@ class _GamePageState extends State<GamePage> {
   }
 
   void _showTempState(String text, Color color) {
-    _isProcessing = true;
     context.read<StatusTextCubit>().show(text);
     context.read<BackgroundColorCubit>().setColor(color);
+  }
 
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!mounted) return;
-      _isProcessing = false;
-      context.read<StatusTextCubit>().hide();
-      context.read<BackgroundColorCubit>().reset();
-      context.read<DisplayRandomFamousCubit>().fetchRandom();
-    });
+  void _resetState() {
+    _isTilted = false;
+    context.read<StatusTextCubit>().hide();
+    context.read<BackgroundColorCubit>().reset();
+    context.read<DisplayRandomFamousCubit>().fetchRandom();
+  }
+
+  void _pauseGame() {
+    _timer?.cancel();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Oyunu duraklat"),
+        content: const Text(
+          "Devam etmek mi yoksa ana sayfaya dönmek mi istersin?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _startTimer();
+            },
+            child: const Text("Devam Et"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              AppNavigator.pushReplacement(context, HomePage());
+            },
+            child: const Text("Ana Sayfa"),
+          ),
+        ],
+      ),
+    );
   }
 
   void _finishTurn() {
-    context.read<CurrentPlayerCubit>().nextPlayer();
-    AppNavigator.pushReplacement(context, const ScorePage());
+    final currentIndex = context.read<CurrentPlayerCubit>().state;
+    final allPlayersLength = context.read<AllPlayersCubit>().state.length;
+    final roundCubit = context.read<RoundCubit>();
+    final maxRound = context.read<MaxRoundCubit>().state;
+
+    if (currentIndex < allPlayersLength - 1) {
+      context.read<CurrentPlayerCubit>().nextPlayer();
+      AppNavigator.pushReplacement(context, const ScorePage());
+    } else {
+      if (roundCubit.state >= maxRound) {
+        roundCubit.resetRound();
+        AppNavigator.pushAndRemove(context, GameEndPage());
+      } else {
+        roundCubit.nextRound();
+        context.read<CurrentPlayerCubit>().setInitial(0);
+        AppNavigator.pushReplacement(context, const ScorePage());
+      }
+    }
   }
 }

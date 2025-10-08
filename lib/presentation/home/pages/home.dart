@@ -11,9 +11,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.accent.withOpacity(
-        0.1,
-      ), // hafif ferah arka plan
+      backgroundColor: AppColors.background, // Sade ve ferah arka plan
       body: SafeArea(
         child: Center(
           child: Column(
@@ -24,7 +22,7 @@ class HomePage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 40,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  color: AppColors.primary, // Mor ton
                 ),
               ),
               const SizedBox(height: 50),
@@ -32,11 +30,11 @@ class HomePage extends StatelessWidget {
                 AppNavigator.push(context, const AddPlayersPage());
               }),
               const SizedBox(height: 20),
-              _homeButton(context, "Nasıl Oynanır?", AppColors.secondary, () {
+              _homeButton(context, "Nasıl Oynanır?", AppColors.primary, () {
                 AppNavigator.push(context, const HowToPlayPage());
               }),
               const SizedBox(height: 20),
-              _homeButton(context, "Ayarlar", AppColors.tertiary, () {
+              _homeButton(context, "Ayarlar", AppColors.primary, () {
                 AppNavigator.push(context, const SettingsPage());
               }),
             ],
@@ -69,7 +67,7 @@ class HomePage extends StatelessWidget {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white, // buton yazıları her zaman beyaz
+            color: Colors.white, // Buton yazısı her zaman beyaz
           ),
         ),
       ),

@@ -13,14 +13,13 @@ class SplashPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary, // AppColors kullanıldı
+      backgroundColor: AppColors.background, // arka plan tutarlı
       body: Center(
         child: BlocListener<LoadCachedFamousCubit, LoadCachedFamousState>(
           listener: (context, state) {
             if (state is LoadCachedFamousSuccess) {
               SplashNavigator.navigate(context, HomePage());
-            }
-            if (state is LoadCachedFamousError) {
+            } else if (state is LoadCachedFamousError) {
               SplashNavigator.navigate(
                 context,
                 ErrorPage(message: state.message),
@@ -34,11 +33,11 @@ class SplashPage extends StatelessWidget {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: AppColors.accent, // ferah beyaz yerine accent
+                  color: AppColors.primary, // logo rengi primary
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.secondary.withOpacity(0.3), // gölge
+                      color: AppColors.secondary.withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -54,12 +53,12 @@ class SplashPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.accent, // temalı renk
+                  color: AppColors.primary, // yazı primary
                 ),
               ),
               const SizedBox(height: 16),
               CircularProgressIndicator(
-                color: AppColors.secondary, // temalı loading
+                color: AppColors.secondary, // loading secondary
               ),
             ],
           ),

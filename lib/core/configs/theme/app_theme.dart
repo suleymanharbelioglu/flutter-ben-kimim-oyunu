@@ -4,7 +4,7 @@ import 'app_colors.dart';
 class AppTheme {
   static final appTheme = ThemeData(
     primaryColor: AppColors.primary,
-    scaffoldBackgroundColor: Colors.white,
+    scaffoldBackgroundColor: AppColors.background,
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.primary,
       foregroundColor: Colors.white,
@@ -20,9 +20,9 @@ class AppTheme {
       ),
     ),
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(foregroundColor: AppColors.secondary),
+      style: TextButton.styleFrom(foregroundColor: AppColors.primary),
     ),
-    colorScheme: ColorScheme.fromSwatch().copyWith(secondary: AppColors.accent),
+    colorScheme: ColorScheme.fromSwatch().copyWith(secondary: AppColors.primary),
     textTheme: const TextTheme(
       titleLarge: TextStyle(
         color: AppColors.primary,

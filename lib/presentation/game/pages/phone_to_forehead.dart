@@ -18,7 +18,7 @@ class _PhoneToForeheadPageState extends State<PhoneToForeheadPage> {
   StreamSubscription? _accelerometerSubscription;
   bool countdownStarted = false;
 
-  // Target ranges
+  // Pozisyon sınırları
   final double minX = 7;
   final double maxX = 10;
   final double minY = -5;
@@ -29,8 +29,7 @@ class _PhoneToForeheadPageState extends State<PhoneToForeheadPage> {
   @override
   void initState() {
     super.initState();
-
-    // Force landscape orientation
+    // Yalnızca yatay mod
     SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
 
     _accelerometerSubscription = accelerometerEvents.listen((event) {
@@ -80,7 +79,7 @@ class _PhoneToForeheadPageState extends State<PhoneToForeheadPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.accent.withOpacity(0.1),
+      backgroundColor: AppColors.background, // Arka plan rengini kullandık
       body: Center(
         child: countdownStarted
             ? Text(
@@ -88,7 +87,7 @@ class _PhoneToForeheadPageState extends State<PhoneToForeheadPage> {
                 style: TextStyle(
                   fontSize: 80,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.secondary,
+                  color: AppColors.secondary, // Countdown secondary renk
                 ),
               )
             : Text(
@@ -97,7 +96,7 @@ class _PhoneToForeheadPageState extends State<PhoneToForeheadPage> {
                   fontSize: 36,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 2,
-                  color: AppColors.primary,
+                  color: AppColors.primary, // Başlık primary renk
                 ),
                 textAlign: TextAlign.center,
               ),
