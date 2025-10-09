@@ -1,10 +1,9 @@
 import 'package:ben_kimim/data/famous/repository/famous_repository_impl.dart';
-import 'package:ben_kimim/data/famous/sources/famous_firebase_service.dart';
+import 'package:ben_kimim/data/famous/sources/famous_name_service.dart';
 import 'package:ben_kimim/data/user/repository/user_settings_repo_impl.dart';
 import 'package:ben_kimim/data/user/sources/user_settings_sharedpref_service.dart';
 import 'package:ben_kimim/domain/famous/repository/famous_repository.dart';
-import 'package:ben_kimim/domain/famous/usecases/get_famous_random_cache.dart';
-import 'package:ben_kimim/domain/famous/usecases/load_famous_cache.dart';
+import 'package:ben_kimim/domain/famous/usecases/get_random_famous.dart';
 import 'package:ben_kimim/domain/user/repository/user_settings_repo.dart';
 import 'package:ben_kimim/domain/user/usecases/clear_settings.dart';
 import 'package:ben_kimim/domain/user/usecases/get_game_duration.dart';
@@ -21,16 +20,10 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<UserSettingsRepo>(UserSettingsRepoImpl());
 
   // Sources
-  sl.registerSingleton<FamousFirebaseService>(FamousFirebaseServiceImpl());
   sl.registerSingleton<UserSettingsSharedprefService>(
     UserSettingsSharedprefServiceImpl(),
   );
-
-  // Usecases - Famous
-  sl.registerSingleton<LoadFamousCacheUseCase>(LoadFamousCacheUseCase());
-  sl.registerSingleton<GetFamousRandomCacheUseCase>(
-    GetFamousRandomCacheUseCase(),
-  );
+  sl.registerSingleton<FamousNameService>(FamousNameServiceImpl());
 
   // Usecases - User Settings
   sl.registerSingleton<SaveMaxRoundUseCase>(SaveMaxRoundUseCase());
@@ -38,4 +31,5 @@ Future<void> initializeDependencies() async {
   sl.registerSingleton<GetMaxRoundUseCase>(GetMaxRoundUseCase());
   sl.registerSingleton<GetGameDurationUseCase>(GetGameDurationUseCase());
   sl.registerSingleton<ClearSettingsUseCase>(ClearSettingsUseCase());
+  sl.registerSingleton<GetRandomFamousNameUseCase>(GetRandomFamousNameUseCase());
 }
