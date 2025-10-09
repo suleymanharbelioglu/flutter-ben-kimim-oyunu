@@ -1,11 +1,12 @@
 import 'package:ben_kimim/core/configs/theme/app_colors.dart';
-import 'package:ben_kimim/domain/player/entity/player.dart';
+import 'package:ben_kimim/domain/user/entity/player.dart';
 import 'package:ben_kimim/presentation/game/bloc/all_players_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/current_player_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/players_listed_by_score_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/round_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/max_round_cubit.dart';
 import 'package:ben_kimim/presentation/game/pages/phone_to_forehead.dart';
+import 'package:ben_kimim/presentation/home/pages/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -14,44 +15,54 @@ class ScorePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Puan Tablosu"),
-        backgroundColor: AppColors.primary,
-        centerTitle: true,
-        elevation: 0,
-      ),
-      backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: BlocBuilder<RoundCubit, int>(
-              builder: (context, round) {
-                final maxRound = context.watch<MaxRoundCubit>().state;
-                return Text(
-                  "Tur: $round / $maxRound",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-                );
-              },
+    return WillPopScope(
+      onWillPop: () async {
+        _showExitDialog(context);
+        return false; // fiziksel geri tuşuna basıldığında dialog açılır
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Puan Tablosu"),
+          backgroundColor: AppColors.primary,
+          centerTitle: true,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: () => _showExitDialog(context),
+          ),
+        ),
+        backgroundColor: AppColors.background,
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: BlocBuilder<RoundCubit, int>(
+                builder: (context, round) {
+                  final maxRound = context.watch<MaxRoundCubit>().state;
+                  return Text(
+                    "Tur: $round / $maxRound",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-          Expanded(child: _buildScoreList()),
-          const Divider(thickness: 2),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: _buildCurrentPlayerCard(context),
-          ),
-        ],
+            Expanded(child: _buildScoreList(context)),
+            const Divider(thickness: 2),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: _buildCurrentPlayerCard(context),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildScoreList() {
+  Widget _buildScoreList(BuildContext context) {
     return BlocBuilder<PlayersListedByScoreCubit, List<PlayerEntity>>(
       builder: (context, players) {
         return ListView.builder(
@@ -68,7 +79,6 @@ class ScorePage extends StatelessWidget {
               color: Colors.white,
               shadowColor: AppColors.secondary.withOpacity(0.3),
               child: ListTile(
-                // Başındaki sıra numarasını kaldırdık
                 title: Text(
                   player.name,
                   style: const TextStyle(
@@ -158,6 +168,40 @@ class ScorePage extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const PhoneToForeheadPage()),
+    );
+  }
+
+  void _showExitDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Oyunu duraklat"),
+        content: const Text(
+          "Devam etmek mi yoksa ana sayfaya dönmek mi istersin?",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // dialog kapansın, oyun devam etsin
+            },
+            child: const Text("Devam Et"),
+          ),
+          TextButton(
+            onPressed: () {
+              // Tur ve oyuncu sayısını resetle
+              context.read<RoundCubit>().resetRound();
+              context.read<CurrentPlayerCubit>().setInitial(0);
+              Navigator.pop(context);
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => HomePage()),
+                (route) => false,
+              );
+            },
+            child: const Text("Ana Sayfa"),
+          ),
+        ],
+      ),
     );
   }
 }

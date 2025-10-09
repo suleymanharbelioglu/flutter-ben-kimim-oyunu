@@ -13,7 +13,7 @@ class PhoneToForeheadPage extends StatefulWidget {
 }
 
 class _PhoneToForeheadPageState extends State<PhoneToForeheadPage> {
-  int countdown = 3;
+  int countdown = 4;
   Timer? _timer;
   StreamSubscription? _accelerometerSubscription;
   bool countdownStarted = false;
@@ -78,28 +78,31 @@ class _PhoneToForeheadPageState extends State<PhoneToForeheadPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background, // Arka plan rengini kullandık
-      body: Center(
-        child: countdownStarted
-            ? Text(
-                '$countdown',
-                style: TextStyle(
-                  fontSize: 80,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.secondary, // Countdown secondary renk
+    return WillPopScope(
+      onWillPop: () async => false, // Geri tuşunu devre dışı bırakır
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(
+          child: countdownStarted
+              ? Text(
+                  '$countdown',
+                  style: TextStyle(
+                    fontSize: 80,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.secondary,
+                  ),
+                )
+              : Text(
+                  'TELEFONU ALNINA YERLEŞTİRİN',
+                  style: TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                    color: AppColors.primary,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              )
-            : Text(
-                'TELEFONU ALNINA YERLEŞTİRİN',
-                style: TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                  color: AppColors.primary, // Başlık primary renk
-                ),
-                textAlign: TextAlign.center,
-              ),
+        ),
       ),
     );
   }

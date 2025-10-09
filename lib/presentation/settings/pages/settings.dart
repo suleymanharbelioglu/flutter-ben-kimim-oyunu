@@ -3,23 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ben_kimim/presentation/game/bloc/max_round_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/timer_cubit.dart';
 
-class SettingsPage extends StatefulWidget {
+class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
-
-  @override
-  State<SettingsPage> createState() => _SettingsPageState();
-}
-
-class _SettingsPageState extends State<SettingsPage> {
-  int _roundCount = 5;
-  int _gameDuration = 90; // default 90 saniye
-
-  @override
-  void initState() {
-    super.initState();
-    _roundCount = context.read<MaxRoundCubit>().state;
-    _gameDuration = context.read<TimerCubit>().state;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,32 +22,37 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            // Round sayısı slider
-            _buildSliderTile(
-              icon: Icons.format_list_numbered,
-              title: "Tur Sayısı",
-              value: _roundCount.toDouble(),
-              min: 2,
-              max: 10,
-              divisions: 8,
-              onChanged: (val) => setState(() => _roundCount = val.toInt()),
-              onChangeEnd: (val) {
-                context.read<MaxRoundCubit>().setMaxRound(val.toInt());
+            // Tur sayısı slider
+            BlocBuilder<MaxRoundCubit, int>(
+              builder: (context, roundCount) {
+                return _buildSliderTile(
+                  icon: Icons.format_list_numbered,
+                  title: "Tur Sayısı",
+                  value: roundCount.toDouble(),
+                  min: 2,
+                  max: 10,
+                  divisions: 8,
+                  onChanged: (val) =>
+                      context.read<MaxRoundCubit>().setMaxRound(val.toInt()),
+                  onChangeEnd: (_) {},
+                );
               },
             ),
             const SizedBox(height: 20),
-
             // Oyun süresi slider
-            _buildSliderTile(
-              icon: Icons.timer,
-              title: "Oyun Süresi (sn)",
-              value: _gameDuration.toDouble(),
-              min: 15,
-              max: 120,
-              divisions: 7, // 15'er artış
-              onChanged: (val) => setState(() => _gameDuration = val.round()),
-              onChangeEnd: (val) {
-                context.read<TimerCubit>().setDuration(val.round());
+            BlocBuilder<TimerCubit, int>(
+              builder: (context, gameDuration) {
+                return _buildSliderTile(
+                  icon: Icons.timer,
+                  title: "Oyun Süresi (sn)",
+                  value: gameDuration.toDouble(),
+                  min: 15,
+                  max: 120,
+                  divisions: 7,
+                  onChanged: (val) =>
+                      context.read<TimerCubit>().setDuration(val.round()),
+                  onChangeEnd: (_) {},
+                );
               },
             ),
           ],

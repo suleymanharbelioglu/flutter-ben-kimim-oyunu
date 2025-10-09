@@ -1,4 +1,3 @@
-import 'package:ben_kimim/core/configs/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ben_kimim/domain/famous/entity/famous.dart';
@@ -16,9 +15,9 @@ class RandomName extends StatelessWidget {
           displayText,
           textAlign: TextAlign.center,
           style: const TextStyle(
-            fontSize: 80, // büyük ve göze çarpan
+            fontSize: 70, // büyük ve göze çarpan
             fontWeight: FontWeight.bold,
-            color: AppColors.primary,
+            color: Colors.white,
             letterSpacing: 2, // biraz ferahlık
             shadows: [
               // hafif gölge ile okunabilirlik

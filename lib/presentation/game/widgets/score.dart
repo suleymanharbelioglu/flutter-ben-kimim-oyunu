@@ -1,4 +1,4 @@
-import 'package:ben_kimim/domain/player/entity/player.dart';
+import 'package:ben_kimim/domain/user/entity/player.dart';
 import 'package:ben_kimim/presentation/game/bloc/players_listed_by_score_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

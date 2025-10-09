@@ -32,7 +32,6 @@ class _GamePageState extends State<GamePage> {
   late int _remainingSeconds;
   StreamSubscription? _accelerometerSub;
   bool _isTilted = false;
-  bool _timeEnded = false; // süre bitti durumu
 
   @override
   void initState() {
@@ -55,83 +54,68 @@ class _GamePageState extends State<GamePage> {
   Widget build(BuildContext context) {
     final currentPlayer = context.watch<CurrentPlayerCubit>().currentPlayer;
 
-    return BlocBuilder<BackgroundColorCubit, Color>(
-      builder: (context, backgroundColor) {
-        return BlocBuilder<StatusTextCubit, String?>(
-          builder: (context, statusText) {
-            return Scaffold(
-              backgroundColor: _timeEnded
-                  ? Colors.yellow
-                  : backgroundColor, // süre bittiğinde sarı
-              body: Stack(
-                children: [
-                  Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        GameTimer(remainingSeconds: _remainingSeconds),
-
-                        if (_timeEnded)
-                          const Text(
-                            "SÜRE BİTTİ",
-                            style: TextStyle(
-                              fontSize: 80,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          )
-                        else if (statusText != null)
-                          Text(
-                            statusText,
-                            style: const TextStyle(
-                              fontSize: 80,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          )
-                        else
-                          const RandomName(),
-
-                        Score(currentPlayer: currentPlayer),
-                      ],
-                    ),
-                  ),
-
-                  Positioned(
-                    top: 20,
-                    left: 20,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back_ios,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                      onPressed: _pauseGame,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
+    return WillPopScope(
+      onWillPop: () async {
+        _pauseGame(); // fiziksel geri tuşuna basıldığında çalışacak
+        return false; // sayfadan çıkışı engelle
       },
+      child: BlocBuilder<BackgroundColorCubit, Color>(
+        builder: (context, backgroundColor) {
+          return BlocBuilder<StatusTextCubit, String?>(
+            builder: (context, statusText) {
+              return Scaffold(
+                backgroundColor: backgroundColor,
+                body: Stack(
+                  children: [
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          GameTimer(remainingSeconds: _remainingSeconds),
+                          if (statusText != null)
+                            Text(
+                              statusText,
+                              style: const TextStyle(
+                                fontSize: 80,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            )
+                          else
+                            const RandomName(),
+                          Score(currentPlayer: currentPlayer),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      top: 20,
+                      left: 20,
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back_ios,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                        onPressed: _pauseGame,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
   void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remainingSeconds > 0) {
         setState(() => _remainingSeconds--);
       } else {
         _timer?.cancel();
-
-        // süre bitti durumu
-        setState(() => _timeEnded = true);
-
-        // 1 saniye bekle
-        await Future.delayed(const Duration(seconds: 1));
-
         _finishTurn();
       }
     });
@@ -141,10 +125,10 @@ class _GamePageState extends State<GamePage> {
     _accelerometerSub = accelerometerEvents.listen((event) {
       final z = event.z;
 
-      if (!_isTilted && z <= -9 && z >= -11) {
+      if (!_isTilted && z <= -8 && z >= -11) {
         _isTilted = true;
         _handleCorrect();
-      } else if (!_isTilted && z >= 9 && z <= 11) {
+      } else if (!_isTilted && z >= 8 && z <= 11) {
         _isTilted = true;
         _handlePass();
       } else if (_isTilted && z.abs() < 6) {
@@ -210,15 +194,19 @@ class _GamePageState extends State<GamePage> {
     final allPlayersLength = context.read<AllPlayersCubit>().state.length;
     final roundCubit = context.read<RoundCubit>();
     final maxRound = context.read<MaxRoundCubit>().state;
-
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    // Eğer son oyuncu değilse
     if (currentIndex < allPlayersLength - 1) {
       context.read<CurrentPlayerCubit>().nextPlayer();
       AppNavigator.pushReplacement(context, const ScorePage());
     } else {
+      // Son oyuncuysa
       if (roundCubit.state >= maxRound) {
-        roundCubit.resetRound();
+        // Maksimum tur tamamlandı -> oyun bitti
+        context.read<RoundCubit>().resetRound();
         AppNavigator.pushAndRemove(context, GameEndPage());
       } else {
+        // Tur artır ve currentPlayer'ı başa al
         roundCubit.nextRound();
         context.read<CurrentPlayerCubit>().setInitial(0);
         AppNavigator.pushReplacement(context, const ScorePage());

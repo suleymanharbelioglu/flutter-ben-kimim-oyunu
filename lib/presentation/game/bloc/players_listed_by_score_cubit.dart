@@ -1,4 +1,4 @@
-import 'package:ben_kimim/domain/player/entity/player.dart';
+import 'package:ben_kimim/domain/user/entity/player.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class PlayersListedByScoreCubit extends Cubit<List<PlayerEntity>> {

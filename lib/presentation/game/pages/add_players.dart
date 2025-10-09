@@ -1,6 +1,6 @@
 import 'package:ben_kimim/common/navigator/app_navigator.dart';
 import 'package:ben_kimim/core/configs/theme/app_colors.dart';
-import 'package:ben_kimim/domain/player/entity/player.dart';
+import 'package:ben_kimim/domain/user/entity/player.dart';
 import 'package:ben_kimim/presentation/game/bloc/all_players_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/current_player_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/players_listed_by_score_cubit.dart';
