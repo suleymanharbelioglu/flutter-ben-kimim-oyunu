@@ -1,3 +1,4 @@
+import 'package:ben_kimim/common/helper/sound/sound.dart';
 import 'package:ben_kimim/common/navigator/app_navigator.dart';
 import 'package:ben_kimim/core/configs/theme/app_colors.dart';
 import 'package:ben_kimim/presentation/game/pages/add_players.dart';
@@ -54,7 +55,10 @@ class HomePage extends StatelessWidget {
       width: 220,
       height: 60,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: () async {
+          await SoundHelper.playClick(); // Tık sesi
+          onPressed(); // Orijinal işlem
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           shape: RoundedRectangleBorder(

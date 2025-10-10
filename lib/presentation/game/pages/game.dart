@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:ben_kimim/common/helper/sound/sound.dart';
 import 'package:ben_kimim/presentation/game/bloc/all_players_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/max_round_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/round_cubit.dart';
@@ -32,6 +33,7 @@ class _GamePageState extends State<GamePage> {
   late int _remainingSeconds;
   StreamSubscription? _accelerometerSub;
   bool _isTilted = false;
+  bool _isTimeUp = false;
 
   @override
   void initState() {
@@ -111,18 +113,25 @@ class _GamePageState extends State<GamePage> {
   }
 
   void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (_remainingSeconds > 0) {
         setState(() => _remainingSeconds--);
+
+        // Son 3 saniyede uyarı sesi çal
+        if (_remainingSeconds == 5) {
+          await SoundHelper.playLastSeconds();
+        }
       } else {
         _timer?.cancel();
-        _finishTurn();
+        await _finishTurn();
       }
     });
   }
 
   void _listenAccelerometer() {
     _accelerometerSub = accelerometerEvents.listen((event) {
+      if (_isTimeUp) return; // Süre bitti ise hareketleri ignore et
+
       final z = event.z;
 
       if (!_isTilted && z <= -8 && z >= -11) {
@@ -137,13 +146,15 @@ class _GamePageState extends State<GamePage> {
     });
   }
 
-  void _handleCorrect() {
+  Future<void> _handleCorrect() async {
+    await SoundHelper.playCorrect();
     final currentPlayer = context.read<CurrentPlayerCubit>().currentPlayer;
     context.read<PlayersListedByScoreCubit>().increaseScore(currentPlayer, 1);
     _showTempState("Doğru!", Colors.green);
   }
 
-  void _handlePass() {
+  Future<void> _handlePass() async {
+    await SoundHelper.playPass();
     _showTempState("Pas!", Colors.red);
   }
 
@@ -180,6 +191,10 @@ class _GamePageState extends State<GamePage> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
+              SystemChrome.setPreferredOrientations([
+                DeviceOrientation.portraitUp,
+              ]);
+
               AppNavigator.pushReplacement(context, HomePage());
             },
             child: const Text("Ana Sayfa"),
@@ -189,28 +204,47 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  void _finishTurn() {
+  Future<void> _finishTurn() async {
+    await _showTimeUpScreen();
+
+    if (!mounted) return;
+
     final currentIndex = context.read<CurrentPlayerCubit>().state;
     final allPlayersLength = context.read<AllPlayersCubit>().state.length;
     final roundCubit = context.read<RoundCubit>();
     final maxRound = context.read<MaxRoundCubit>().state;
+    context.read<BackgroundColorCubit>().reset();
+    context.read<StatusTextCubit>().hide();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    // Eğer son oyuncu değilse
+
     if (currentIndex < allPlayersLength - 1) {
       context.read<CurrentPlayerCubit>().nextPlayer();
       AppNavigator.pushReplacement(context, const ScorePage());
     } else {
-      // Son oyuncuysa
       if (roundCubit.state >= maxRound) {
-        // Maksimum tur tamamlandı -> oyun bitti
         context.read<RoundCubit>().resetRound();
         AppNavigator.pushAndRemove(context, GameEndPage());
       } else {
-        // Tur artır ve currentPlayer'ı başa al
         roundCubit.nextRound();
         context.read<CurrentPlayerCubit>().setInitial(0);
         AppNavigator.pushReplacement(context, const ScorePage());
       }
     }
+  }
+
+  Future<void> _showTimeUpScreen() async {
+    if (!mounted) return;
+
+    _isTimeUp = true; // Süre bitti modu aktif
+
+    context.read<BackgroundColorCubit>().setColor(Colors.yellow);
+    context.read<StatusTextCubit>().show("Süre Bitti!");
+    await SoundHelper.playTimeUp();
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+
+    _isTimeUp = false; // Süre bitti modu kapat
   }
 }

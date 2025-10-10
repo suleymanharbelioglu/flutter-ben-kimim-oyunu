@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:ben_kimim/common/helper/sound/sound.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sensors_plus/sensors_plus.dart';
@@ -45,9 +46,15 @@ class _PhoneToForeheadPageState extends State<PhoneToForeheadPage> {
         if (inPositionNow) {
           countdownStarted = true;
           startCountdown();
+          startCountDownSound();
         }
       }
     });
+  }
+
+  Future<void> startCountDownSound() async {
+    await Future.delayed(Duration(seconds: 1));
+    await SoundHelper.playCountdown();
   }
 
   void startCountdown() {

@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
         BlocProvider<CurrentPlayerCubit>(
           create: (context) => CurrentPlayerCubit(),
         ),
-      
+
         BlocProvider<DisplayRandomFamousCubit>(
           create: (context) => DisplayRandomFamousCubit()..fetchRandom(),
         ),
