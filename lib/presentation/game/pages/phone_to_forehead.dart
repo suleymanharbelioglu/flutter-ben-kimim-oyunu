@@ -52,6 +52,37 @@ class _PhoneToForeheadPageState extends State<PhoneToForeheadPage> {
     });
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: () async => false, // Geri tuşunu devre dışı bırakır
+      child: Scaffold(
+        backgroundColor: AppColors.primary,
+        body: Center(
+          child: countdownStarted
+              ? Text(
+                  '$countdown',
+                  style: TextStyle(
+                    fontSize: 80,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                )
+              : Text(
+                  'TELEFONU ALNINIZA YERLEŞTİRİN',
+                  style: TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+        ),
+      ),
+    );
+  }
+
   Future<void> startCountDownSound() async {
     await Future.delayed(Duration(seconds: 1));
     await SoundHelper.playCountdown();
@@ -81,36 +112,5 @@ class _PhoneToForeheadPageState extends State<PhoneToForeheadPage> {
     _accelerometerSubscription?.cancel();
     _timer?.cancel();
     super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false, // Geri tuşunu devre dışı bırakır
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(
-          child: countdownStarted
-              ? Text(
-                  '$countdown',
-                  style: TextStyle(
-                    fontSize: 80,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.secondary,
-                  ),
-                )
-              : Text(
-                  'TELEFONU ALNINA YERLEŞTİRİN',
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
-                    color: AppColors.primary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-        ),
-      ),
-    );
   }
 }

@@ -28,7 +28,7 @@ class _AddPlayersPageState extends State<AddPlayersPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add Players"),
+        title: const Text("Oyuncu Ekle"),
         backgroundColor: AppColors.primary,
         centerTitle: true,
         elevation: 0,
@@ -67,7 +67,7 @@ class _AddPlayersPageState extends State<AddPlayersPage> {
             child: TextFormField(
               controller: controllers[index],
               decoration: InputDecoration(
-                labelText: "Player ${index + 1}",
+                labelText: "Oyuncu ${index + 1}",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -75,7 +75,7 @@ class _AddPlayersPageState extends State<AddPlayersPage> {
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return "Name cannot be empty";
+                  return "İsim boş olamaz";
                 }
                 return null;
               },
@@ -126,7 +126,7 @@ class _AddPlayersPageState extends State<AddPlayersPage> {
           ),
         ),
         child: const Text(
-          "Continue",
+          "Devam Et",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ),

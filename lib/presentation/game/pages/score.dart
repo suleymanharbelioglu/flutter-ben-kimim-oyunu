@@ -174,34 +174,130 @@ class ScorePage extends StatelessWidget {
   void _showExitDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Oyunu duraklat"),
-        content: const Text(
-          "Devam etmek mi yoksa ana sayfaya dönmek mi istersin?",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // dialog kapansın, oyun devam etsin
-            },
-            child: const Text("Devam Et"),
+      barrierDismissible: false, // ekran boşluğuna basınca kapanmasın
+      builder: (context) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        final screenHeight = MediaQuery.of(context).size.height;
+
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20), // hafif oval köşeler
           ),
-          TextButton(
-            onPressed: () {
-              // Tur ve oyuncu sayısını resetle
-              context.read<RoundCubit>().resetRound();
-              context.read<CurrentPlayerCubit>().setInitial(0);
-              Navigator.pop(context);
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => HomePage()),
-                (route) => false,
-              );
-            },
-            child: const Text("Ana Sayfa"),
+          child: Container(
+            width: screenWidth * 0.8,
+            height: screenHeight * 0.35,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Başlık
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary, // mor renk
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      "Duraklat",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Açıklama
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    "Oyundan çıkmak istediğinize emin misiniz?",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black87, // koyu yazı
+                    ),
+                  ),
+                ),
+
+                const Spacer(),
+
+                // Butonlar
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 20,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Home Butonu
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // Tur ve oyuncu sayısını resetle
+                            context.read<RoundCubit>().resetRound();
+                            context.read<CurrentPlayerCubit>().setInitial(0);
+
+                            Navigator.pop(context);
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(builder: (_) => HomePage()),
+                              (route) => false,
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          child: const Text(
+                            "Ana Sayfa",
+                            style: TextStyle(fontSize: 18, color: Colors.white),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 20),
+
+                      // Resume Butonu
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(
+                              context,
+                            ); // dialog kapansın, oyun devam etsin
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          child: const Text(
+                            "Devam Et",
+                            style: TextStyle(fontSize: 18, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

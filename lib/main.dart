@@ -17,7 +17,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // await FamousHelper.addFamousNames();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await initializeDependencies();
   runApp(const MyApp());

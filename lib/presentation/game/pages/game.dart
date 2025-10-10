@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:ben_kimim/common/helper/sound/sound.dart';
+import 'package:ben_kimim/core/configs/theme/app_colors.dart';
 import 'package:ben_kimim/presentation/game/bloc/all_players_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/max_round_cubit.dart';
 import 'package:ben_kimim/presentation/game/bloc/round_cubit.dart';
@@ -74,7 +75,10 @@ class _GamePageState extends State<GamePage> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          GameTimer(remainingSeconds: _remainingSeconds),
+                          GameTimer(
+                            remainingSeconds: _remainingSeconds,
+                            totalSeconds: context.read<TimerCubit>().state,
+                          ),
                           if (statusText != null)
                             Text(
                               statusText,
@@ -91,8 +95,8 @@ class _GamePageState extends State<GamePage> {
                       ),
                     ),
                     Positioned(
-                      top: 20,
-                      left: 20,
+                      top: 30,
+                      left: 25,
                       child: IconButton(
                         icon: const Icon(
                           Icons.arrow_back_ios,
@@ -172,35 +176,130 @@ class _GamePageState extends State<GamePage> {
 
   void _pauseGame() {
     _timer?.cancel();
+    _accelerometerSub?.pause();
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Oyunu duraklat"),
-        content: const Text(
-          "Devam etmek mi yoksa ana sayfaya dönmek mi istersin?",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _startTimer();
-            },
-            child: const Text("Devam Et"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              SystemChrome.setPreferredOrientations([
-                DeviceOrientation.portraitUp,
-              ]);
+      barrierDismissible: false, // ekran boşluğuna basınca kapanmasın
+      builder: (context) {
+        final screenWidth = MediaQuery.of(context).size.width;
+        final screenHeight = MediaQuery.of(context).size.height;
 
-              AppNavigator.pushReplacement(context, HomePage());
-            },
-            child: const Text("Ana Sayfa"),
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20), // hafif oval köşeler
           ),
-        ],
-      ),
+          child: Container(
+            width: screenWidth * 0.6,
+            height: screenHeight * 0.6,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Başlık
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary, // mor renk
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      "Duraklama",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Açıklama
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    "Oyundan çıkmak istediğinize emin misiniz?",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black87, // koyu yazı
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                const Spacer(),
+
+                // Butonlar
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 20,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Home Butonu
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            SystemChrome.setPreferredOrientations([
+                              DeviceOrientation.portraitUp,
+                            ]);
+                            AppNavigator.pushReplacement(context, HomePage());
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          child: const Text(
+                            "Ana Sayfa",
+                            style: TextStyle(fontSize: 18, color: Colors.white),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 20),
+
+                      // Resume Butonu
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _startTimer();
+                            _accelerometerSub?.resume();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                          child: const Text(
+                            "Devam Et",
+                            style: TextStyle(fontSize: 18, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

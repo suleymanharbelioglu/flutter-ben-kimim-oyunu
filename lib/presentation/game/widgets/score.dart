@@ -16,8 +16,12 @@ class Score extends StatelessWidget {
             .firstWhere((p) => p.name == currentPlayer.name)
             .score;
         return Text(
-          " Score $score",
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          "$score DOĞRU",
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         );
       },
     );
